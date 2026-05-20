@@ -19,30 +19,27 @@ echo Downloading from GitHub...
 echo   %DOWNLOAD_URL%
 echo.
 
-REM Delete old temp first
 if exist "%TEMP_ZIP%" del /f /q "%TEMP_ZIP%"
 
-REM Try curl first (more reliable than PowerShell)
+REM Try curl with SSL revocation check disabled (common in corporate networks)
 where curl >nul 2>nul
 if not errorlevel 1 (
-    echo Using curl...
-    curl -L -o "%TEMP_ZIP%" "%DOWNLOAD_URL%"
-    goto check_download
+    echo Using curl with relaxed SSL settings...
+    curl -L --ssl-no-revoke -o "%TEMP_ZIP%" "%DOWNLOAD_URL%"
+    if exist "%TEMP_ZIP%" goto check_size
 )
 
-REM Fallback to PowerShell
-echo Using PowerShell...
-powershell -ExecutionPolicy Bypass -Command "& {[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; try { Invoke-WebRequest -Uri '%DOWNLOAD_URL%' -OutFile '%TEMP_ZIP%' -UseBasicParsing -ErrorAction Stop } catch { Write-Host ('Error: ' + $_.Exception.Message); exit 1 }}"
+REM Fallback to PowerShell with relaxed SSL
+echo Trying PowerShell as fallback...
+powershell -ExecutionPolicy Bypass -Command "& { [System.Net.ServicePointManager]::ServerCertificateValidationCallback = {$true}; [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; try { Invoke-WebRequest -Uri '%DOWNLOAD_URL%' -OutFile '%TEMP_ZIP%' -UseBasicParsing -ErrorAction Stop } catch { Write-Host ('Error: ' + $_.Exception.Message); exit 1 }}"
 
-:check_download
+:check_size
 if not exist "%TEMP_ZIP%" goto download_failed
 
-REM Check file size > 1KB (smaller usually means 404 page)
 for %%A in ("%TEMP_ZIP%") do set FSIZE=%%~zA
 if %FSIZE% LSS 1000 (
     echo.
     echo [WARNING] Downloaded file is suspiciously small: %FSIZE% bytes
-    echo This usually means the URL returned an error page.
     del /f /q "%TEMP_ZIP%"
     goto download_failed
 )
@@ -57,7 +54,7 @@ powershell -Command "Expand-Archive -Path '%TEMP_ZIP%' -DestinationPath '%TEMP_D
 set SRC_DIR=%TEMP_DIR%\%GH_REPO%-%GH_BRANCH%
 
 if not exist "%SRC_DIR%" (
-    echo [ERROR] Extracted folder not found at %SRC_DIR%
+    echo [ERROR] Extracted folder not found.
     pause
     exit /b 1
 )
@@ -98,13 +95,15 @@ exit /b 0
 echo.
 echo [ERROR] Download failed.
 echo.
-echo Try this manually in your browser to test:
-echo   %DOWNLOAD_URL%
+echo If you see SSL certificate errors:
+echo   - This is usually a corporate network or VPN issue
+echo   - The script tried both curl and PowerShell
 echo.
-echo If browser can download but this script cannot:
-echo   - Possibly Dropbox is interfering
-echo   - Try moving LianYi folder OUTSIDE Dropbox
-echo   - Or try running this file as Administrator
+echo Manual workaround:
+echo   1. Open browser, go to:
+echo      %DOWNLOAD_URL%
+echo   2. Save the zip file
+echo   3. Extract and copy app/ START.bat README.txt over the old ones
 echo.
 pause
 exit /b 1
