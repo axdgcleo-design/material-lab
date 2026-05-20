@@ -7,7 +7,6 @@ echo    LIAN YI DESIGN - Update from GitHub
 echo ============================================================
 echo.
 
-REM === GitHub repository info (already set for axdgcleo-design) ===
 set GH_USER=axdgcleo-design
 set GH_REPO=material-lab
 set GH_BRANCH=main
@@ -16,34 +15,39 @@ set DOWNLOAD_URL=https://github.com/%GH_USER%/%GH_REPO%/archive/refs/heads/%GH_B
 set TEMP_ZIP=%TEMP%\lianyi_update.zip
 set TEMP_DIR=%TEMP%\lianyi_update
 
-echo Downloading latest version from GitHub...
-echo   User: %GH_USER%
-echo   Repo: %GH_REPO%
+echo Downloading from GitHub...
+echo   %DOWNLOAD_URL%
 echo.
 
-powershell -Command "& {[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; try { Invoke-WebRequest -Uri '%DOWNLOAD_URL%' -OutFile '%TEMP_ZIP%' -UseBasicParsing } catch { Write-Host $_.Exception.Message; exit 1 }}"
+REM Delete old temp first
+if exist "%TEMP_ZIP%" del /f /q "%TEMP_ZIP%"
 
-if not exist "%TEMP_ZIP%" (
-    echo.
-    echo [ERROR] Download failed.
-    echo.
-    echo Possible reasons:
-    echo   1. No internet connection
-    echo   2. Repository is empty (you haven't uploaded files yet)
-    echo   3. Repository is private and you need authentication
-    echo   4. GitHub username or repo name is wrong
-    echo.
-    echo Current settings:
-    echo   User: %GH_USER%
-    echo   Repo: %GH_REPO%
-    echo.
-    echo URL tested: %DOWNLOAD_URL%
-    echo.
-    pause
-    exit /b 1
+REM Try curl first (more reliable than PowerShell)
+where curl >nul 2>nul
+if not errorlevel 1 (
+    echo Using curl...
+    curl -L -o "%TEMP_ZIP%" "%DOWNLOAD_URL%"
+    goto check_download
 )
 
-echo Download complete. Extracting...
+REM Fallback to PowerShell
+echo Using PowerShell...
+powershell -ExecutionPolicy Bypass -Command "& {[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; try { Invoke-WebRequest -Uri '%DOWNLOAD_URL%' -OutFile '%TEMP_ZIP%' -UseBasicParsing -ErrorAction Stop } catch { Write-Host ('Error: ' + $_.Exception.Message); exit 1 }}"
+
+:check_download
+if not exist "%TEMP_ZIP%" goto download_failed
+
+REM Check file size > 1KB (smaller usually means 404 page)
+for %%A in ("%TEMP_ZIP%") do set FSIZE=%%~zA
+if %FSIZE% LSS 1000 (
+    echo.
+    echo [WARNING] Downloaded file is suspiciously small: %FSIZE% bytes
+    echo This usually means the URL returned an error page.
+    del /f /q "%TEMP_ZIP%"
+    goto download_failed
+)
+
+echo Download OK (%FSIZE% bytes). Extracting...
 echo.
 
 if exist "%TEMP_DIR%" rmdir /s /q "%TEMP_DIR%"
@@ -53,7 +57,7 @@ powershell -Command "Expand-Archive -Path '%TEMP_ZIP%' -DestinationPath '%TEMP_D
 set SRC_DIR=%TEMP_DIR%\%GH_REPO%-%GH_BRANCH%
 
 if not exist "%SRC_DIR%" (
-    echo [ERROR] Extracted folder not found.
+    echo [ERROR] Extracted folder not found at %SRC_DIR%
     pause
     exit /b 1
 )
@@ -77,7 +81,7 @@ if exist "%SRC_DIR%\README.txt" (
     copy /Y "%SRC_DIR%\README.txt" "README.txt" >nul
 )
 
-del "%TEMP_ZIP%" >nul 2>nul
+del /f /q "%TEMP_ZIP%" >nul 2>nul
 rmdir /s /q "%TEMP_DIR%" >nul 2>nul
 
 echo.
@@ -88,3 +92,19 @@ echo   Double-click START.bat to launch.
 echo ============================================================
 echo.
 pause
+exit /b 0
+
+:download_failed
+echo.
+echo [ERROR] Download failed.
+echo.
+echo Try this manually in your browser to test:
+echo   %DOWNLOAD_URL%
+echo.
+echo If browser can download but this script cannot:
+echo   - Possibly Dropbox is interfering
+echo   - Try moving LianYi folder OUTSIDE Dropbox
+echo   - Or try running this file as Administrator
+echo.
+pause
+exit /b 1
