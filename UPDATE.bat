@@ -7,10 +7,9 @@ echo    LIAN YI DESIGN - Update from GitHub
 echo ============================================================
 echo.
 
-REM === GitHub repository info ===
-REM After setup, replace YOUR_USERNAME with your GitHub username
-set GH_USER=YOUR_USERNAME
-set GH_REPO=lianyi-material-db
+REM === GitHub repository info (already set for axdgcleo-design) ===
+set GH_USER=axdgcleo-design
+set GH_REPO=material-lab
 set GH_BRANCH=main
 
 set DOWNLOAD_URL=https://github.com/%GH_USER%/%GH_REPO%/archive/refs/heads/%GH_BRANCH%.zip
@@ -18,17 +17,27 @@ set TEMP_ZIP=%TEMP%\lianyi_update.zip
 set TEMP_DIR=%TEMP%\lianyi_update
 
 echo Downloading latest version from GitHub...
+echo   User: %GH_USER%
+echo   Repo: %GH_REPO%
 echo.
 
-powershell -Command "& {[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; Invoke-WebRequest -Uri '%DOWNLOAD_URL%' -OutFile '%TEMP_ZIP%' -UseBasicParsing}"
+powershell -Command "& {[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; try { Invoke-WebRequest -Uri '%DOWNLOAD_URL%' -OutFile '%TEMP_ZIP%' -UseBasicParsing } catch { Write-Host $_.Exception.Message; exit 1 }}"
 
 if not exist "%TEMP_ZIP%" (
     echo.
     echo [ERROR] Download failed.
-    echo Check:
-    echo   1. Internet connection
-    echo   2. GitHub username in UPDATE.bat is correct
-    echo   3. Repository name is "lianyi-material-db"
+    echo.
+    echo Possible reasons:
+    echo   1. No internet connection
+    echo   2. Repository is empty (you haven't uploaded files yet)
+    echo   3. Repository is private and you need authentication
+    echo   4. GitHub username or repo name is wrong
+    echo.
+    echo Current settings:
+    echo   User: %GH_USER%
+    echo   Repo: %GH_REPO%
+    echo.
+    echo URL tested: %DOWNLOAD_URL%
     echo.
     pause
     exit /b 1
