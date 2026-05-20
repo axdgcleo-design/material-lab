@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<title>案場 ｜ 漣一設計</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500&family=Noto+Serif+TC:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/static/style.css">
+<style>
+  .projects-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 18px;
+    padding: 28px 36px 60px;
+  }
+  .project-card {
+    background: var(--paper);
+    border: 1px solid var(--line-faint);
+    padding: 24px 24px 20px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-decoration: none;
+    color: inherit;
+    display: flex;
+    flex-direction: column;
+    min-height: 180px;
+  }
+  .project-card:hover {
+    border-color: var(--ink-soft);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+  }
+  .project-card .pc-code {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    color: var(--ink-faint);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .project-card .pc-name {
+    font-family: "Noto Serif TC", serif;
+    font-size: 22px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    margin-bottom: 4px;
+  }
+  .project-card .pc-client {
+    font-size: 13px;
+    color: var(--ink-soft);
+    margin-bottom: 16px;
+  }
+  .project-card .pc-meta {
+    margin-top: auto;
+    padding-top: 14px;
+    border-top: 1px solid var(--line-faint);
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    font-size: 12px;
+    color: var(--ink-faint);
+    font-family: "JetBrains Mono", monospace;
+    letter-spacing: 0.1em;
+  }
+  .project-card .pc-meta .count {
+    color: var(--ink);
+    font-family: "Cormorant Garamond", serif;
+    font-size: 16px;
+    font-weight: 500;
+  }
+
+  .empty-state-large {
+    grid-column: 1 / -1;
+    padding: 100px 20px;
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-name">
+        漣一設計 ｜ 材料庫
+        <span class="en">Lian Yi Design</span>
+      </div>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-label-row"><span class="nav-label">主選單</span></div>
+      <a class="nav-item" href="/" style="text-decoration:none;color:inherit;">
+        <span class="nav-item-name">材料庫</span>
+      </a>
+      <a class="nav-item active" href="/projects" style="text-decoration:none;color:inherit;">
+        <span class="nav-item-name">案場</span>
+        <span class="nav-count" id="projectCount">0</span>
+      </a>
+    </div>
+
+    <div class="sidebar-foot">
+      <div class="stat"><span>VERSION</span><span>v0.3</span></div>
+    </div>
+  </aside>
+
+  <main class="main" style="grid-column: 2 / -1; padding:0;">
+    <div class="main-head" style="margin: 28px 36px 0; padding-bottom: 18px;">
+      <div class="main-title-block">
+        <div class="num">— Section 02</div>
+        <h1 class="main-title">案 場</h1>
+        <div class="main-title-zh">Projects</div>
+      </div>
+      <div class="toolbar">
+        <button class="btn" id="addProjectBtn">+ 新增案場</button>
+      </div>
+    </div>
+
+    <div class="projects-grid" id="projectsGrid">
+      <div class="empty-state-large">
+        <div class="empty-title">還沒有任何案場</div>
+        <div class="empty-sub">點右上方「+ 新增案場」開始建立你的第一個案子。</div>
+      </div>
+    </div>
+  </main>
+
+</div>
+
+<!-- 新增案場 Modal -->
+<div class="modal-overlay" id="projModal" style="display:none;">
+  <div class="cat-modal" style="width:560px;">
+    <div class="cat-modal-head">
+      <h2 id="projModalTitle">新增案場</h2>
+      <button class="head-close" onclick="closeProjModal()">✕</button>
+    </div>
+    <div class="cat-modal-body">
+      <input type="hidden" id="editingProjId" value="" />
+      <div class="grid grid-2" style="gap:14px;">
+        <div class="field">
+          <div class="field-label"><span class="label-text">案場代號<span class="required">*</span></span></div>
+          <input class="input code-style" id="projCode" placeholder="如:2024_王宅" />
+        </div>
+        <div class="field">
+          <div class="field-label"><span class="label-text">案場名稱<span class="required">*</span></span></div>
+          <input class="input" id="projName" placeholder="如:王宅" />
+        </div>
+        <div class="field">
+          <div class="field-label"><span class="label-text">業主</span></div>
+          <input class="input" id="projClient" placeholder="如:王先生" />
+        </div>
+        <div class="field">
+          <div class="field-label"><span class="label-text">屋型</span></div>
+          <input class="input" id="projType" placeholder="如:住宅 / 中古屋" />
+        </div>
+        <div class="field">
+          <div class="field-label"><span class="label-text">坪數</span></div>
+          <div class="input-wrap">
+            <input class="input with-suffix" id="projArea" type="number" step="0.1" />
+            <span class="input-suffix">坪</span>
+          </div>
+        </div>
+        <div class="field">
+          <div class="field-label"><span class="label-text">完工日期</span></div>
+          <input class="input" id="projCompleted" placeholder="YYYY.MM.DD" />
+        </div>
+        <div class="field" style="grid-column: span 2;">
+          <div class="field-label">
+            <span class="label-text">致業主前言</span>
+            <span class="hint">出現在業主版材料書,段落用空行分隔</span>
+          </div>
+          <textarea class="textarea" id="projForeword" style="height:auto;min-height:120px;" placeholder="這本材料書,記錄了您家中每一處材料的選擇與來歷..."></textarea>
+        </div>
+      </div>
+    </div>
+    <div class="cat-modal-foot">
+      <button class="btn btn-ghost danger-btn" id="projDeleteBtn" style="display:none;border-color:var(--accent);color:var(--accent);">刪除</button>
+      <button class="btn btn-ghost" onclick="closeProjModal()">取消</button>
+      <button class="btn" id="projSaveBtn">儲存</button>
+    </div>
+  </div>
+</div>
+
+<script>
+async function loadProjects() {
+  const res = await fetch('/api/projects');
+  const projects = await res.json();
+  document.getElementById('projectCount').textContent = projects.length;
+  const grid = document.getElementById('projectsGrid');
+
+  if (projects.length === 0) {
+    grid.innerHTML = `
+      <div class="empty-state-large">
+        <div class="empty-title">還沒有任何案場</div>
+        <div class="empty-sub">點右上方「+ 新增案場」開始建立你的第一個案子。</div>
+      </div>`;
+    return;
+  }
+
+  grid.innerHTML = projects.map(p => `
+    <a class="project-card" href="/project/${p.id}">
+      <div class="pc-code">${p.code} ${p.client_type ? '· ' + p.client_type : ''}</div>
+      <div class="pc-name">${p.name}</div>
+      <div class="pc-client">${p.client_name || '—'}${p.area ? ' · ' + p.area + (p.area_unit||'坪') : ''}</div>
+      <div class="pc-meta">
+        <span>${p.completed_date || '進行中'}</span>
+        <span><span class="count">${p.material_count}</span> 項材料</span>
+      </div>
+    </a>
+  `).join('');
+}
+
+function openProjModal(project) {
+  document.getElementById('projModal').style.display = 'flex';
+  if (project) {
+    document.getElementById('projModalTitle').textContent = '編輯案場';
+    document.getElementById('editingProjId').value = project.id;
+    document.getElementById('projCode').value = project.code || '';
+    document.getElementById('projName').value = project.name || '';
+    document.getElementById('projClient').value = project.client_name || '';
+    document.getElementById('projType').value = project.client_type || '';
+    document.getElementById('projArea').value = project.area || '';
+    document.getElementById('projCompleted').value = project.completed_date || '';
+    document.getElementById('projForeword').value = project.foreword || '';
+    document.getElementById('projDeleteBtn').style.display = 'inline-block';
+  } else {
+    document.getElementById('projModalTitle').textContent = '新增案場';
+    document.getElementById('editingProjId').value = '';
+    document.querySelectorAll('#projModal input, #projModal textarea').forEach(el => el.value = '');
+    document.getElementById('projDeleteBtn').style.display = 'none';
+
+    // 預設前言
+    document.getElementById('projForeword').value = `這本材料書,記錄了您家中每一處材料的選擇與來歷。
+
+每一項決定背後,都有當時為什麼這樣選的理由。希望這本小書,陪您住下去的每一年。`;
+  }
+}
+
+function closeProjModal() {
+  document.getElementById('projModal').style.display = 'none';
+}
+
+document.getElementById('addProjectBtn').addEventListener('click', () => openProjModal());
+
+document.getElementById('projSaveBtn').addEventListener('click', async () => {
+  const editId = document.getElementById('editingProjId').value;
+  const payload = {
+    code: document.getElementById('projCode').value.trim(),
+    name: document.getElementById('projName').value.trim(),
+    client_name: document.getElementById('projClient').value.trim(),
+    client_type: document.getElementById('projType').value.trim(),
+    area: document.getElementById('projArea').value,
+    area_unit: '坪',
+    completed_date: document.getElementById('projCompleted').value.trim(),
+    foreword: document.getElementById('projForeword').value.trim(),
+  };
+  if (!payload.code || !payload.name) {
+    alert('案場代號與名稱必填');
+    return;
+  }
+  const url = editId ? '/api/projects/' + editId : '/api/projects';
+  const method = editId ? 'PUT' : 'POST';
+  const res = await fetch(url, {
+    method,
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify(payload)
+  });
+  const data = await res.json();
+  if (data.ok) {
+    closeProjModal();
+    loadProjects();
+  } else {
+    alert('儲存失敗:' + (data.error || ''));
+  }
+});
+
+document.getElementById('projDeleteBtn').addEventListener('click', async () => {
+  const editId = document.getElementById('editingProjId').value;
+  if (!editId) return;
+  if (!confirm('確定要刪除這個案場?連同所有材料清單也會一起刪除(材料本身不會被刪)。')) return;
+  const res = await fetch('/api/projects/' + editId, {method: 'DELETE'});
+  const data = await res.json();
+  if (data.ok) {
+    closeProjModal();
+    loadProjects();
+  }
+});
+
+loadProjects();
+</script>
+
+</body>
+</html>

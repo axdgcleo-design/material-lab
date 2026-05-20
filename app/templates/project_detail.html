@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<title>案場詳情 ｜ 漣一設計</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500&family=Noto+Serif+TC:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/static/style.css">
+<style>
+  body { background: var(--bg); }
+  .page { max-width: 1200px; margin: 0 auto; padding: 32px 32px 80px; }
+
+  .page-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--ink);
+    margin-bottom: 28px;
+  }
+  .page-head .crumb {
+    font-family: "Cormorant Garamond", serif;
+    font-size: 12px;
+    color: var(--ink-faint);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .page-head .crumb a { color: var(--ink-faint); text-decoration: none; }
+  .page-head .crumb a:hover { color: var(--ink); }
+  .page-head h1 {
+    font-family: "Noto Serif TC", serif;
+    font-size: 36px;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    line-height: 1;
+  }
+  .page-head .sub {
+    font-family: "Cormorant Garamond", serif;
+    font-size: 15px;
+    color: var(--ink-faint);
+    margin-top: 8px;
+    letter-spacing: 0.15em;
+  }
+  .page-actions { display: flex; gap: 8px; }
+
+  .info-strip {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 24px;
+    background: var(--paper);
+    padding: 22px 28px;
+    border: 1px solid var(--line);
+    margin-bottom: 28px;
+  }
+  .info-strip .item .key {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 9px;
+    letter-spacing: 0.25em;
+    color: var(--ink-faint);
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .info-strip .item .val {
+    font-size: 15px;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+  }
+
+  /* Materials in project */
+  .section-block {
+    background: var(--paper);
+    border: 1px solid var(--line);
+    margin-bottom: 22px;
+  }
+  .section-block-head {
+    padding: 18px 24px 14px;
+    border-bottom: 1px solid var(--line);
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+  }
+  .section-block-head h2 {
+    font-family: "Noto Serif TC", serif;
+    font-size: 17px;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+  }
+  .section-block-head h2 .en {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 10px;
+    color: var(--ink-faint);
+    margin-left: 10px;
+    letter-spacing: 0.2em;
+    font-weight: 400;
+  }
+  .section-block-head .count {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 10px;
+    color: var(--ink-faint);
+    letter-spacing: 0.2em;
+  }
+
+  .pm-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  .pm-table th {
+    text-align: left;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    color: var(--ink-faint);
+    text-transform: uppercase;
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--line);
+    font-weight: 400;
+    background: var(--paper-warm);
+  }
+  .pm-table td {
+    padding: 14px;
+    border-bottom: 1px solid var(--line-faint);
+    font-size: 13px;
+    vertical-align: middle;
+  }
+  .pm-table tr:hover td { background: var(--paper-warm); }
+  .pm-table td .thumb {
+    width: 44px;
+    height: 44px;
+    background: var(--paper-warm);
+    border: 1px solid var(--line);
+    overflow: hidden;
+  }
+  .pm-table td .thumb img { width: 100%; height: 100%; object-fit: cover; }
+  .pm-table td .mcode {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 10px;
+    color: var(--ink-faint);
+    letter-spacing: 0.1em;
+  }
+  .pm-table td .mname {
+    font-weight: 500;
+    margin-top: 2px;
+  }
+  .pm-table input.cell-input {
+    border: 1px solid transparent;
+    background: transparent;
+    padding: 4px 6px;
+    font-family: inherit;
+    font-size: 13px;
+    width: 100%;
+    color: var(--ink);
+  }
+  .pm-table input.cell-input:hover { border-color: var(--line); }
+  .pm-table input.cell-input:focus {
+    outline: none;
+    border-color: var(--ink);
+    background: white;
+  }
+  .pm-table .row-actions {
+    display: flex;
+    gap: 4px;
+    justify-content: flex-end;
+  }
+  .pm-table .row-actions button {
+    width: 26px;
+    height: 26px;
+    border: 1px solid var(--line);
+    background: var(--paper);
+    cursor: pointer;
+    font-size: 12px;
+    color: var(--ink-soft);
+  }
+  .pm-table .row-actions button:hover { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+  .pm-table .row-actions button.delete:hover { background: var(--accent); border-color: var(--accent); }
+
+  /* Material picker modal */
+  .picker-modal {
+    background: var(--paper);
+    width: 90vw;
+    max-width: 1100px;
+    height: 85vh;
+    display: flex;
+    flex-direction: column;
+    border: 1px solid var(--line);
+  }
+  .picker-head {
+    padding: 20px 28px;
+    border-bottom: 1px solid var(--line);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .picker-head h2 {
+    font-family: "Noto Serif TC", serif;
+    font-size: 18px;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+  }
+  .picker-toolbar {
+    padding: 14px 28px;
+    border-bottom: 1px solid var(--line-faint);
+    display: flex;
+    gap: 12px;
+    align-items: center;
+  }
+  .picker-toolbar select,
+  .picker-toolbar input {
+    height: 36px;
+    padding: 0 12px;
+    border: 1px solid var(--line);
+    background: var(--paper);
+    font-family: "Noto Serif TC", serif;
+    font-size: 13px;
+  }
+  .picker-toolbar input { width: 240px; }
+  .picker-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px 28px;
+  }
+  .picker-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 14px;
+  }
+  .picker-card {
+    background: var(--paper);
+    border: 1px solid var(--line-faint);
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+  }
+  .picker-card:hover { border-color: var(--ink-soft); }
+  .picker-card.selected {
+    border-color: var(--ink);
+    box-shadow: 0 0 0 2px var(--ink);
+  }
+  .picker-card.selected::after {
+    content: '✓';
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    width: 22px;
+    height: 22px;
+    background: var(--ink);
+    color: var(--paper);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+  }
+  .picker-card .pimg {
+    width: 100%;
+    aspect-ratio: 4/3;
+    background: var(--paper-warm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--ink-faint);
+    font-family: "Cormorant Garamond", serif;
+    font-size: 12px;
+  }
+  .picker-card .pimg img { width: 100%; height: 100%; object-fit: cover; }
+  .picker-card .pcode {
+    position: absolute;
+    top: 6px;
+    left: 6px;
+    background: rgba(250,248,244,0.92);
+    font-family: "JetBrains Mono", monospace;
+    font-size: 9px;
+    letter-spacing: 0.1em;
+    padding: 2px 6px;
+  }
+  .picker-card .pbody { padding: 8px 10px 10px; }
+  .picker-card .pname { font-size: 12px; font-weight: 500; line-height: 1.3; }
+  .picker-foot {
+    padding: 16px 28px;
+    border-top: 1px solid var(--line);
+    background: var(--paper-warm);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .picker-foot .selection-count {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    color: var(--ink-soft);
+  }
+  .picker-foot .selection-count .num {
+    font-family: "Cormorant Garamond", serif;
+    font-size: 18px;
+    font-weight: 500;
+    color: var(--ink);
+    margin: 0 6px;
+  }
+
+  .empty-pm {
+    padding: 60px 20px;
+    text-align: center;
+    color: var(--ink-faint);
+  }
+</style>
+</head>
+<body>
+
+<div class="page">
+
+  <div class="page-head">
+    <div>
+      <div class="crumb"><a href="/projects">← 案場列表</a></div>
+      <h1 id="projectName">—</h1>
+      <div class="sub" id="projectCode">—</div>
+    </div>
+    <div class="page-actions">
+      <button class="btn btn-ghost" id="editProjectBtn">✎ 編輯案場</button>
+      <button class="btn btn-ghost" id="addMaterialsBtn">+ 加入材料</button>
+      <a class="btn" id="openBookBtn" href="#" target="_blank">📖 業主版材料書</a>
+    </div>
+  </div>
+
+  <div class="info-strip">
+    <div class="item"><div class="key">CLIENT</div><div class="val" id="infoClient">—</div></div>
+    <div class="item"><div class="key">TYPE</div><div class="val" id="infoType">—</div></div>
+    <div class="item"><div class="key">AREA</div><div class="val" id="infoArea">—</div></div>
+    <div class="item"><div class="key">COMPLETED</div><div class="val" id="infoCompleted">—</div></div>
+  </div>
+
+  <div class="section-block">
+    <div class="section-block-head">
+      <h2>使用材料<span class="en">MATERIALS USED</span></h2>
+      <div class="count" id="materialCount">0 ITEMS</div>
+    </div>
+    <div id="materialsTable">
+      <div class="empty-pm">
+        還沒有任何材料,點上方「+ 加入材料」開始勾選。
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Edit Project Modal -->
+<div class="modal-overlay" id="projModal" style="display:none;">
+  <div class="cat-modal" style="width:560px;">
+    <div class="cat-modal-head">
+      <h2>編輯案場</h2>
+      <button class="head-close" onclick="document.getElementById('projModal').style.display='none'">✕</button>
+    </div>
+    <div class="cat-modal-body">
+      <div class="grid grid-2" style="gap:14px;">
+        <div class="field"><div class="field-label"><span class="label-text">案場代號</span></div><input class="input code-style" id="eProjCode" /></div>
+        <div class="field"><div class="field-label"><span class="label-text">案場名稱</span></div><input class="input" id="eProjName" /></div>
+        <div class="field"><div class="field-label"><span class="label-text">業主</span></div><input class="input" id="eProjClient" /></div>
+        <div class="field"><div class="field-label"><span class="label-text">屋型</span></div><input class="input" id="eProjType" /></div>
+        <div class="field"><div class="field-label"><span class="label-text">坪數</span></div><input class="input" id="eProjArea" type="number" step="0.1" /></div>
+        <div class="field"><div class="field-label"><span class="label-text">完工日期</span></div><input class="input" id="eProjCompleted" /></div>
+        <div class="field" style="grid-column: span 2;">
+          <div class="field-label"><span class="label-text">致業主前言</span></div>
+          <textarea class="textarea" id="eProjForeword" style="height:auto;min-height:120px;"></textarea>
+        </div>
+      </div>
+    </div>
+    <div class="cat-modal-foot">
+      <button class="btn btn-ghost" onclick="document.getElementById('projModal').style.display='none'">取消</button>
+      <button class="btn" id="saveProjBtn">儲存變更</button>
+    </div>
+  </div>
+</div>
+
+<!-- Material Picker Modal -->
+<div class="modal-overlay" id="pickerModal" style="display:none;">
+  <div class="picker-modal">
+    <div class="picker-head">
+      <h2>挑選材料加入案場</h2>
+      <button class="head-close" onclick="document.getElementById('pickerModal').style.display='none'">✕</button>
+    </div>
+    <div class="picker-toolbar">
+      <select id="pickerCat"><option value="all">所有分類</option></select>
+      <input id="pickerSearch" placeholder="搜尋編號、品名、供應商..." />
+    </div>
+    <div class="picker-body">
+      <div class="picker-grid" id="pickerGrid"></div>
+    </div>
+    <div class="picker-foot">
+      <div class="selection-count">已選 <span class="num" id="pickerCount">0</span> 個</div>
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-ghost" onclick="document.getElementById('pickerModal').style.display='none'">取消</button>
+        <button class="btn" id="confirmAddBtn">加入這些材料</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const projectId = {{ project_id }};
+let projectData = null;
+let pickerSelected = new Set();
+
+async function loadProject() {
+  const res = await fetch('/api/projects/' + projectId);
+  if (!res.ok) { alert('找不到案場'); window.location.href='/projects'; return; }
+  projectData = await res.json();
+
+  document.getElementById('projectName').textContent = projectData.name;
+  document.getElementById('projectCode').textContent = projectData.code;
+  document.getElementById('infoClient').textContent = projectData.client_name || '—';
+  document.getElementById('infoType').textContent = projectData.client_type || '—';
+  document.getElementById('infoArea').textContent = projectData.area ? projectData.area + ' ' + (projectData.area_unit||'坪') : '—';
+  document.getElementById('infoCompleted').textContent = projectData.completed_date || '—';
+  document.getElementById('openBookBtn').href = '/book/' + projectId;
+
+  renderMaterials();
+}
+
+function renderMaterials() {
+  const materials = projectData.materials || [];
+  document.getElementById('materialCount').textContent = materials.length + ' ITEM' + (materials.length === 1 ? '' : 'S');
+  const container = document.getElementById('materialsTable');
+
+  if (materials.length === 0) {
+    container.innerHTML = `<div class="empty-pm">還沒有任何材料,點上方「+ 加入材料」開始勾選。</div>`;
+    return;
+  }
+
+  // 按分類分組
+  const byCat = {};
+  materials.forEach(m => {
+    if (!byCat[m.cat_name]) byCat[m.cat_name] = [];
+    byCat[m.cat_name].push(m);
+  });
+
+  let html = '<table class="pm-table"><thead><tr>';
+  html += '<th style="width:60px;"></th>';
+  html += '<th style="width:90px;">編號</th>';
+  html += '<th>材料</th>';
+  html += '<th style="width:240px;">安裝位置</th>';
+  html += '<th style="width:120px;">數量</th>';
+  html += '<th style="width:200px;">備註</th>';
+  html += '<th style="width:60px;"></th>';
+  html += '</tr></thead><tbody>';
+
+  for (const cat in byCat) {
+    html += `<tr><td colspan="7" style="background:var(--paper-warm);padding:8px 14px;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.2em;color:var(--ink-faint);text-transform:uppercase;">— ${cat} ·  ${byCat[cat].length} 項</td></tr>`;
+    byCat[cat].forEach(m => {
+      html += `
+        <tr data-pmid="${m.pm_id}">
+          <td><div class="thumb">${m.photo_main ? `<img src="/photos/${m.photo_main}" />` : ''}</div></td>
+          <td><span class="mcode">${m.code}</span></td>
+          <td>
+            <div class="mname">${m.name}</div>
+          </td>
+          <td><input class="cell-input loc-input" value="${m.location||''}" placeholder="如:客廳電視牆" /></td>
+          <td><input class="cell-input qty-input" value="${m.quantity||''}" placeholder="0" type="number" step="0.01" /></td>
+          <td><input class="cell-input note-input" value="${m.note||''}" placeholder="" /></td>
+          <td><div class="row-actions"><button class="delete" onclick="removePm(${m.pm_id})">×</button></div></td>
+        </tr>
+      `;
+    });
+  }
+  html += '</tbody></table>';
+  container.innerHTML = html;
+
+  // 綁定 inline 編輯
+  container.querySelectorAll('tr[data-pmid]').forEach(tr => {
+    const pmid = tr.dataset.pmid;
+    let saveTimer;
+    tr.querySelectorAll('input').forEach(inp => {
+      inp.addEventListener('input', () => {
+        clearTimeout(saveTimer);
+        saveTimer = setTimeout(() => savePm(tr, pmid), 600);
+      });
+      inp.addEventListener('blur', () => savePm(tr, pmid));
+    });
+  });
+}
+
+async function savePm(tr, pmid) {
+  const payload = {
+    location: tr.querySelector('.loc-input').value,
+    quantity: tr.querySelector('.qty-input').value,
+    note: tr.querySelector('.note-input').value,
+  };
+  await fetch('/api/project-materials/' + pmid, {
+    method: 'PUT',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify(payload)
+  });
+}
+
+async function removePm(pmid) {
+  if (!confirm('從這個案場移除這筆材料?(材料本身不會被刪)')) return;
+  await fetch('/api/project-materials/' + pmid, {method: 'DELETE'});
+  loadProject();
+}
+
+// ── Picker ──
+async function openPicker() {
+  pickerSelected.clear();
+  document.getElementById('pickerCount').textContent = '0';
+  document.getElementById('pickerModal').style.display = 'flex';
+
+  // 載入分類
+  const catRes = await fetch('/api/categories');
+  const cats = await catRes.json();
+  const catSel = document.getElementById('pickerCat');
+  catSel.innerHTML = '<option value="all">所有分類</option>' +
+    cats.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+
+  loadPickerMaterials();
+}
+
+async function loadPickerMaterials() {
+  const cat = document.getElementById('pickerCat').value;
+  const q = document.getElementById('pickerSearch').value.trim();
+  const params = new URLSearchParams();
+  if (cat !== 'all') params.set('category_id', cat);
+  if (q) params.set('q', q);
+  const res = await fetch('/api/materials?' + params);
+  const items = await res.json();
+
+  // 已經在案場的材料不顯示
+  const existingMaterialIds = new Set((projectData.materials || []).map(m => m.material_id));
+  const filtered = items.filter(m => !existingMaterialIds.has(m.id));
+
+  const grid = document.getElementById('pickerGrid');
+  if (filtered.length === 0) {
+    grid.innerHTML = '<div style="grid-column:1/-1;padding:40px;text-align:center;color:var(--ink-faint);">沒有可加入的材料,可能已全部加入,或這個分類還沒建檔</div>';
+    return;
+  }
+
+  grid.innerHTML = filtered.map(m => `
+    <div class="picker-card ${pickerSelected.has(m.id) ? 'selected' : ''}" data-id="${m.id}">
+      <div class="pimg">
+        ${m.photo_main ? `<img src="/photos/${m.photo_main}" />` : 'No image'}
+        <div class="pcode">${m.code}</div>
+      </div>
+      <div class="pbody">
+        <div class="pname">${m.name}</div>
+      </div>
+    </div>
+  `).join('');
+
+  grid.querySelectorAll('.picker-card').forEach(card => {
+    card.addEventListener('click', () => {
+      const id = parseInt(card.dataset.id);
+      if (pickerSelected.has(id)) {
+        pickerSelected.delete(id);
+        card.classList.remove('selected');
+      } else {
+        pickerSelected.add(id);
+        card.classList.add('selected');
+      }
+      document.getElementById('pickerCount').textContent = pickerSelected.size;
+    });
+  });
+}
+
+document.getElementById('addMaterialsBtn').addEventListener('click', openPicker);
+document.getElementById('pickerCat').addEventListener('change', loadPickerMaterials);
+
+let pickerSearchTimer;
+document.getElementById('pickerSearch').addEventListener('input', () => {
+  clearTimeout(pickerSearchTimer);
+  pickerSearchTimer = setTimeout(loadPickerMaterials, 250);
+});
+
+document.getElementById('confirmAddBtn').addEventListener('click', async () => {
+  if (pickerSelected.size === 0) { alert('請先勾選材料'); return; }
+  for (const mid of pickerSelected) {
+    await fetch('/api/projects/' + projectId + '/materials', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({material_id: mid})
+    });
+  }
+  document.getElementById('pickerModal').style.display = 'none';
+  loadProject();
+});
+
+// ── Edit Project ──
+document.getElementById('editProjectBtn').addEventListener('click', () => {
+  document.getElementById('eProjCode').value = projectData.code || '';
+  document.getElementById('eProjName').value = projectData.name || '';
+  document.getElementById('eProjClient').value = projectData.client_name || '';
+  document.getElementById('eProjType').value = projectData.client_type || '';
+  document.getElementById('eProjArea').value = projectData.area || '';
+  document.getElementById('eProjCompleted').value = projectData.completed_date || '';
+  document.getElementById('eProjForeword').value = projectData.foreword || '';
+  document.getElementById('projModal').style.display = 'flex';
+});
+
+document.getElementById('saveProjBtn').addEventListener('click', async () => {
+  const payload = {
+    code: document.getElementById('eProjCode').value.trim(),
+    name: document.getElementById('eProjName').value.trim(),
+    client_name: document.getElementById('eProjClient').value.trim(),
+    client_type: document.getElementById('eProjType').value.trim(),
+    area: document.getElementById('eProjArea').value,
+    area_unit: '坪',
+    completed_date: document.getElementById('eProjCompleted').value.trim(),
+    foreword: document.getElementById('eProjForeword').value.trim(),
+  };
+  const res = await fetch('/api/projects/' + projectId, {
+    method: 'PUT',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify(payload)
+  });
+  if ((await res.json()).ok) {
+    document.getElementById('projModal').style.display = 'none';
+    loadProject();
+  }
+});
+
+loadProject();
+</script>
+
+</body>
+</html>

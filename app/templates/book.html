@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<title>{{ project.name }} ｜ 材料書 ｜ 漣一設計</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500&family=Noto+Serif+TC:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/static/book.css">
+</head>
+<body>
+
+<div class="book">
+
+  <!-- COVER -->
+  <section class="cover">
+    <div class="cover-top">
+      <div class="cover-brand">
+        漣 一 設 計
+        <span class="en">Lian Yi Design Studio</span>
+      </div>
+      <div class="cover-meta">
+        Vol. {{ '%03d' | format(project.id) }}<br>
+        {{ project.completed_date or '—' }}
+      </div>
+    </div>
+
+    <div class="cover-center">
+      <div class="cover-edition">— Material Book / 第 {{ '%03d' | format(project.id) }} 號</div>
+      <div class="cover-title-en">{{ project.client_name }} Residence</div>
+      <div class="cover-title">{{ project.name }}</div>
+      <div class="cover-subtitle">材 料 書</div>
+    </div>
+  </section>
+
+  <!-- FOREWORD -->
+  {% if project.foreword %}
+  <section class="foreword">
+    <div class="foreword-num">— Foreword</div>
+    <h2 class="foreword-title">致 {{ project.client_name }}</h2>
+    <div class="foreword-title-en">A Note to the Owner</div>
+    <div class="foreword-body">
+      {% for paragraph in project.foreword.split('\n\n') %}
+        <p>{{ paragraph }}</p>
+      {% endfor %}
+    </div>
+    <div class="foreword-signature">
+      Cleo Tseng
+      <span class="role">主理設計師 · 漣一設計</span>
+    </div>
+  </section>
+  {% endif %}
+
+  <!-- MATERIAL INDEX -->
+  <section class="content-area">
+    <div class="content-head">
+      <div class="title">材 料 目 錄<span class="en">Material Index</span></div>
+      <div class="count">{{ chapters.values() | map('length') | sum }} ENTRIES · {{ chapters | length }} CATEGORIES</div>
+    </div>
+
+    <div class="expand-controls">
+      <span class="ctrl" onclick="document.querySelectorAll('.chapter').forEach(c=>c.classList.add('is-open'))">全部展開</span>
+      <span class="sep">/</span>
+      <span class="ctrl" onclick="document.querySelectorAll('.chapter').forEach(c=>c.classList.remove('is-open'))">全部收合</span>
+    </div>
+
+    {% set chapter_num = ['I.', 'II.', 'III.', 'IV.', 'V.', 'VI.', 'VII.', 'VIII.', 'IX.', 'X.'] %}
+    {% set ch_idx = namespace(i=0) %}
+
+    {% for cat_name, items in chapters.items() %}
+    <div class="chapter {% if ch_idx.i == 0 %}is-open{% endif %}">
+      <div class="chapter-header" onclick="this.parentElement.classList.toggle('is-open')">
+        <div class="chapter-num">{{ chapter_num[ch_idx.i] }}</div>
+        <div class="chapter-title-row">
+          <div class="chapter-title">{{ cat_name }}</div>
+          <div class="chapter-title-en">{{ cat_name }}</div>
+        </div>
+        <div class="chapter-count">{{ items | length }} ITEM{% if items | length > 1 %}S{% endif %}</div>
+        <div class="chapter-toggle"></div>
+      </div>
+      <div class="chapter-body">
+
+        {% for m in items %}
+        <div class="material-entry">
+          <div class="material-img-block">
+            <div class="material-img">
+              {% if m.photo_main %}
+                <img src="/photos/{{ m.photo_main }}" alt="{{ m.name }}" />
+              {% endif %}
+              <div class="material-img-code">{{ m.code }}</div>
+            </div>
+          </div>
+          <div class="material-info">
+            <div class="material-name-row">
+              <div class="material-name">{{ m.name }}</div>
+              {% if m.name_en %}<div class="material-name-en">{{ m.name_en }}</div>{% endif %}
+            </div>
+            <div class="material-spec-table">
+              {% if m.spec %}<div class="spec-row"><div class="spec-key">Spec</div><div class="spec-val">{{ m.spec }}{% if m.detail %} · {{ m.detail }}{% endif %}</div></div>{% endif %}
+              {% if m.brand %}<div class="spec-row"><div class="spec-key">Brand</div><div class="spec-val">{{ m.brand }}</div></div>{% endif %}
+              {% if m.supplier %}<div class="spec-row"><div class="spec-key">Origin</div><div class="spec-val">{{ m.supplier }}</div></div>{% endif %}
+            </div>
+
+            {% if m.client_about %}
+            <div class="material-block">
+              <div class="material-block-head"><span>About / 材料說明</span><span>i.</span></div>
+              <div class="material-block-body">{{ m.client_about }}</div>
+            </div>
+            {% endif %}
+
+            {% if m.client_care %}
+            <div class="material-block">
+              <div class="material-block-head"><span>Care / 保養方式</span><span>ii.</span></div>
+              <div class="material-block-body">{{ m.client_care }}</div>
+            </div>
+            {% endif %}
+
+            {% if m.location %}
+            <div class="material-block">
+              <div class="material-block-head"><span>Used In / 安裝位置</span><span>iii.</span></div>
+              <div class="material-block-body">
+                {% for loc in m.location.split(',') %}
+                  <span class="location-tag">{{ loc.strip() }}</span>
+                {% endfor %}
+              </div>
+            </div>
+            {% endif %}
+          </div>
+        </div>
+        {% endfor %}
+
+      </div>
+    </div>
+    {% set ch_idx.i = ch_idx.i + 1 %}
+    {% endfor %}
+
+  </section>
+
+  <!-- COLOPHON -->
+  <section class="colophon">
+    <div class="colophon-main">
+      <h2>關 於 這 本 書<span class="en">About This Book</span></h2>
+      <p>這份材料書由漣一設計為您製作,記錄 {{ project.name }} 工程中所有經您確認、實際使用的材料規格與來源。</p>
+      <p>所有資料來自我們的內部材料資料庫,並依您家中實際安裝位置整理而成。</p>
+      <p>若您有任何關於材料、保養或日後修繕的問題,歡迎隨時與我們聯絡。</p>
+    </div>
+    <div class="colophon-side">
+      <div class="item"><div class="key">Studio</div><div class="val">漣一設計</div></div>
+      <div class="item"><div class="key">Designer</div><div class="val">Cleo Tseng</div></div>
+      <div class="item"><div class="key">Issued</div><div class="val">{{ project.completed_date or '—' }}</div></div>
+    </div>
+  </section>
+
+  <div class="bottom-strip">
+    <span>© {{ project.completed_date[:4] if project.completed_date else '2025' }} LIAN YI DESIGN</span>
+    <span>{{ project.name }} · MATERIAL BOOK</span>
+    <span>VOL. {{ '%03d' | format(project.id) }}</span>
+  </div>
+
+</div>
+
+</body>
+</html>

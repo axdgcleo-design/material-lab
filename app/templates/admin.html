@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<title>漣一設計 ｜ 材料庫</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500&family=Noto+Serif+TC:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+<div class="app">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-name">
+        漣一設計 ｜ 材料庫
+        <span class="en">Lian Yi Design · Material Archive</span>
+      </div>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-label-row">
+        <span class="nav-label">分類 Categories</span>
+        <button class="add-cat-btn" id="addCatBtn" title="新增分類">+</button>
+      </div>
+      <div id="navCategories"></div>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-label-row"><span class="nav-label">系統 System</span></div>
+      <a class="nav-item" href="/projects" style="text-decoration:none;color:inherit;">
+        <span class="nav-item-name">案場</span>
+        <span class="nav-count">→</span>
+      </a>
+    </div>
+
+    <div class="sidebar-foot">
+      <div class="stat"><span>MATERIALS</span><span id="statTotal">0</span></div>
+      <div class="stat"><span>UPDATED</span><span id="statUpdated">—</span></div>
+      <div class="stat"><span>VERSION</span><span>v0.3</span></div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+    <div class="main-head">
+      <div class="main-title-block">
+        <div class="num">— Section 01</div>
+        <h1 class="main-title" id="mainTitle">材 料 庫</h1>
+        <div class="main-title-zh">Materials Archive</div>
+      </div>
+      <div class="toolbar">
+        <div class="search-wrap">
+          <span class="search-icon">⌕</span>
+          <input class="search-input" id="searchInput" placeholder="搜尋材料 / 編號 / 供應商" />
+        </div>
+        <a class="btn" href="/new">+ 新增材料</a>
+      </div>
+    </div>
+
+    <div id="gallery" class="gallery">
+      <div class="empty-state">
+        <div class="empty-title">材料庫是空的</div>
+        <div class="empty-sub">點右上方「+ 新增材料」開始累積你的第一筆。</div>
+      </div>
+    </div>
+  </main>
+
+  <!-- DETAIL -->
+  <aside class="detail" id="detail">
+    <div class="detail-empty">
+      <div class="empty-title">選一個材料</div>
+      <div class="empty-sub">點左側任一卡片查看詳細資訊。</div>
+    </div>
+  </aside>
+
+</div>
+
+<!-- Category Manage Modal -->
+<div class="modal-overlay" id="catModal" style="display:none;">
+  <div class="cat-modal">
+    <div class="cat-modal-head">
+      <h2>新增分類</h2>
+      <button class="head-close" onclick="document.getElementById('catModal').style.display='none'">✕</button>
+    </div>
+    <div class="cat-modal-body">
+      <div class="field" style="margin-bottom:14px;">
+        <div class="field-label"><span class="label-text">分類名稱</span></div>
+        <input class="input" id="newCatName" placeholder="如:磚材、燈具、軟件…" />
+      </div>
+      <div class="field">
+        <div class="field-label"><span class="label-text">編號前綴(2-3 個英文字母)</span></div>
+        <input class="input code-style" id="newCatPrefix" placeholder="如:BR / LT" maxlength="3" />
+      </div>
+    </div>
+    <div class="cat-modal-foot">
+      <button class="btn btn-ghost" onclick="document.getElementById('catModal').style.display='none'">取消</button>
+      <button class="btn" id="saveCatBtn">儲存</button>
+    </div>
+  </div>
+</div>
+
+<script src="/static/admin.js"></script>
+</body>
+</html>
